@@ -8,7 +8,13 @@ const LoginForm = () => {
   const router = useRouter(); // Initialize useRouter
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading } = useAuth();
+  const { login, loading} = useAuth();
+  const { user } = useAuth();
+  
+  //console.log("checking user", user)
+  if (user && !loading) {
+      router.push('/');
+    }
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,13 +28,30 @@ const LoginForm = () => {
       
       // Assuming your Django backend returns a JWT token
       const token = response.data.access;
+	  const refresh = response.data.refresh; 
+	  
+	  //token refresh control
+	  const currentDate = new Date();
+	   const TokenExpirationDate = new Date(currentDate.getTime() + 5 * 60 * 1000);
+	  
+	  // Make an API call with the JWT header token so that we receive the logged user which is authenticated from the DB
+	  //This ensures the User receives the permision from database directly
+      const user_response= await axios.get('http://127.0.0.1:8000/user', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+	  
+	  const AuthUser = user_response.data.user_name;
 
       // Store the token in a cookie
       Cookies.set('jwt_token', token);
+	  Cookies.set('jwt_refresh', refresh);
+	  Cookies.set('jwt_expire',TokenExpirationDate.toISOString())
       console.log('Login successful!');
 
       // Update the context with the retrieved token
-      login(token);
+      login(AuthUser);
 
       // Redirect or perform any other actions after successful login
       router.push('/');

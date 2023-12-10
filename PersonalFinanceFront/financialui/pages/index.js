@@ -5,13 +5,16 @@ import styles from '../styles/Home.module.css';
 import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   console.log(user + " log")
-  return (
+ return (
     <div>
       <h1>Welcome to the Home Page</h1>
       {user ? (
-        <p>Hello, {user.username}!</p>
+        <div>
+          <p>Hello, {user.username}!</p>
+          <button onClick={logout}>Logout</button>
+        </div>
       ) : (
         <div>
           <p>Please log in to access the content.</p>
